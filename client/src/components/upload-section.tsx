@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, Video, File, CloudUpload, VideoIcon } from "lucide-react";
+import { Upload, File, Cloud, Video } from "lucide-react";
 
 interface UploadSectionProps {
   onFileSelect: (file: File | null) => void; // Allow null for removal
@@ -91,7 +91,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
 
               <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <VideoIcon className="w-4 h-4" />
+                  <Video className="w-4 h-4" />
                   <span>MP4, AVI, MOV</span>
                 </div>
                 <div className="flex items-center gap-2">
