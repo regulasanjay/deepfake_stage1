@@ -26,13 +26,23 @@ export function HeroSection() {
           </div>
         </div>
         
-        <a
-          href="#upload"
-          className="inline-flex items-center gap-2 px-8 h-12 rounded-md bg-white text-primary font-semibold text-lg hover-elevate active-elevate-2 shadow-xl"
-          data-testid="link-get-started"
+        <a 
+          href="#upload" 
+          className="inline-flex items-center gap-2 px-8 h-12 rounded-md bg-white text-primary font-semibold text-lg hover:bg-white/90 transition-all hover:scale-105 active:scale-95 shadow-xl"
         >
           Get Started
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </a>
+
+        <a
+          href="#upload"
+          className="inline-flex items-center px-8 h-12 rounded-md bg-white text-primary font-semibold text-lg hover-elevate active-elevate-2 shadow-xl"
+          data-testid="link-get-started"
+        >
+          Get Started
+          <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </a>
