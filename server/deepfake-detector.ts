@@ -1,5 +1,6 @@
 
 import axios from "axios";
+import FormData from "form-data";
 import type { InsertVideoAnalysis } from "@shared/schema";
 
 export interface VideoMetadata {
@@ -17,8 +18,10 @@ export async function analyzeVideo(metadata: VideoMetadata): Promise<InsertVideo
     // Step 1: Upload video to Deepware
     const uploadFormData = new FormData();
     if (metadata.buffer) {
-      const blob = new Blob([metadata.buffer], { type: metadata.fileType });
-      uploadFormData.append('video', blob, metadata.fileName);
+      uploadFormData.append('video', metadata.buffer, {
+        filename: metadata.fileName,
+        contentType: metadata.fileType,
+      });
     }
 
     const uploadResponse = await axios.post(
