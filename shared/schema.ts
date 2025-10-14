@@ -30,6 +30,7 @@ export const insertVideoAnalysisSchema = createInsertSchema(videoAnalyses).omit(
 
 export type InsertVideoAnalysis = z.infer<typeof insertVideoAnalysisSchema>;
 export type VideoAnalysis = typeof videoAnalyses.$inferSelect;
+export type VideoAnalysisInsert = typeof videoAnalyses.$inferInsert;
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
