@@ -41,10 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
-        buffer: req.file.buffer,
       };
 
-      const analysisData = await analyzeVideo(videoMetadata);
+      const analysisData = analyzeVideo(videoMetadata);
       
       const analysis = await storage.createVideoAnalysis(analysisData);
 
