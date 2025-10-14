@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { CloudUpload, Video, FileVideo } from "lucide-react";
+import { Upload, Video, File } from "lucide-react";
 
 interface UploadSectionProps {
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File | null) => void; // Allow null for removal
   selectedFile: File | null;
   onStartAnalysis: () => void;
 }
@@ -49,15 +49,15 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
           className={`
             relative border-2 border-dashed rounded-lg p-12 text-center cursor-pointer
             transition-all duration-200
-            ${isDragActive 
-              ? 'border-primary bg-primary/5 scale-[1.02]' 
+            ${isDragActive
+              ? 'border-primary bg-primary/5 scale-[1.02]'
               : 'border-border bg-card hover:border-primary/50 hover:bg-card/80'
             }
           `}
           data-testid="dropzone-upload"
         >
           <input {...getInputProps()} />
-          
+
           {!selectedFile ? (
             <div className="flex flex-col items-center gap-4">
               <div className={`
@@ -65,9 +65,9 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
                 ${isDragActive ? 'bg-primary/10' : 'bg-primary/5'}
                 transition-colors
               `}>
-                <CloudUpload className={`w-12 h-12 ${isDragActive ? 'text-primary' : 'text-primary/60'}`} />
+                <Upload className={`w-12 h-12 ${isDragActive ? 'text-primary' : 'text-primary/60'}`} />
               </div>
-              
+
               <div>
                 <p className="text-lg font-semibold mb-2">
                   {isDragActive ? 'Drop your video here' : 'Drag & drop your video here'}
@@ -81,7 +81,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
                   <span>MP4, AVI, MOV</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FileVideo className="w-4 h-4" />
+                  <File className="w-4 h-4" />
                   <span>Max 500MB</span>
                 </div>
               </div>
@@ -90,7 +90,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
             <div className="flex items-center justify-between gap-6 bg-background rounded-lg p-6">
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <FileVideo className="w-6 h-6 text-primary" />
+                  <File className="w-6 h-6 text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium truncate" data-testid="text-filename">{selectedFile.name}</p>
@@ -100,7 +100,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onFileSelect(null as any);
+                  onFileSelect(null); // Pass null to indicate removal
                 }}
                 className="px-4 h-9 rounded-md border border-border hover-elevate active-elevate-2 font-medium text-sm"
                 data-testid="button-remove-file"
