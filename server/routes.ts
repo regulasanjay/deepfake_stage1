@@ -1,20 +1,33 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import multer from "multer";
+import os from "os";
+import path from "path";
+import fs from "fs/promises";
 import { storage } from "./storage";
 import { analyzeVideo } from "./deepfake-detector";
 
+// Use disk storage to avoid loading large uploads into memory
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, os.tmpdir()),
+    filename: (_req, file, cb) => {
+      const safeBase = path
+        .basename(file.originalname)
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
+      const unique = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      cb(null, `${unique}-${safeBase}`);
+    },
+  }),
   limits: {
     fileSize: 500 * 1024 * 1024,
   },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['video/mp4', 'video/avi', 'video/quicktime'];
+  fileFilter: (_req, file, cb) => {
+    const allowedTypes = ["video/mp4", "video/avi", "video/quicktime"];
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only MP4, AVI, and MOV files are allowed.'));
+      cb(new Error("Invalid file type. Only MP4, AVI, and MOV files are allowed."));
     }
   },
 });
@@ -41,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fileName: req.file.originalname,
         fileSize: req.file.size,
         fileType: req.file.mimetype,
-        buffer: req.file.buffer,
+        filePath: (req.file as any).path,
       };
 
       const analysisData = await analyzeVideo(videoMetadata);
@@ -56,6 +69,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.status(500).json({ error: error.message });
       } else {
         res.status(500).json({ error: "Analysis failed. Please try again." });
+      }
+    } finally {
+      // Cleanup uploaded temp file
+      try {
+        if (req.file && (req.file as any).path) {
+          await fs.unlink((req.file as any).path);
+        }
+      } catch {
+        // ignore cleanup errors
       }
     }
   });
