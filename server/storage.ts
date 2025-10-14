@@ -1,5 +1,6 @@
-import { type User, type InsertUser, type VideoAnalysis, type InsertVideoAnalysis } from "@shared/schema";
-import { randomUUID } from "crypto";
+import { type User, type InsertUser, type VideoAnalysis, type InsertVideoAnalysis, users, videoAnalyses } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -11,64 +12,43 @@ export interface IStorage {
   getAllVideoAnalyses(): Promise<VideoAnalysis[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-  private videoAnalyses: Map<string, VideoAnalysis>;
-
-  constructor() {
-    this.users = new Map();
-    this.videoAnalyses = new Map();
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async createVideoAnalysis(insertAnalysis: InsertVideoAnalysis): Promise<VideoAnalysis> {
-    const id = randomUUID();
-    const analysis: VideoAnalysis = {
-      id,
-      fileName: insertAnalysis.fileName,
-      fileSize: insertAnalysis.fileSize,
-      fileType: insertAnalysis.fileType,
-      duration: insertAnalysis.duration ?? null,
-      resolution: insertAnalysis.resolution ?? null,
-      frameRate: insertAnalysis.frameRate ?? null,
-      isAuthentic: insertAnalysis.isAuthentic,
-      confidenceScore: insertAnalysis.confidenceScore,
-      spatialScore: insertAnalysis.spatialScore,
-      temporalScore: insertAnalysis.temporalScore,
-      faceManipulationScore: insertAnalysis.faceManipulationScore,
-      audioVisualSyncScore: insertAnalysis.audioVisualSyncScore,
-      compressionArtifactsScore: insertAnalysis.compressionArtifactsScore,
-      frameConfidenceData: insertAnalysis.frameConfidenceData as number[],
-      analysisStages: insertAnalysis.analysisStages as string[],
-      createdAt: new Date(),
-    };
-    this.videoAnalyses.set(id, analysis);
+    const analysisData = insertAnalysis;
+    const [analysis] = await db
+      .insert(videoAnalyses)
+      .values(analysisData)
+      .returning();
     return analysis;
   }
 
   async getVideoAnalysis(id: string): Promise<VideoAnalysis | undefined> {
-    return this.videoAnalyses.get(id);
+    const [analysis] = await db.select().from(videoAnalyses).where(eq(videoAnalyses.id, id));
+    return analysis || undefined;
   }
 
   async getAllVideoAnalyses(): Promise<VideoAnalysis[]> {
-    return Array.from(this.videoAnalyses.values());
+    const analyses = await db.select().from(videoAnalyses).orderBy(desc(videoAnalyses.createdAt));
+    return analyses;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
