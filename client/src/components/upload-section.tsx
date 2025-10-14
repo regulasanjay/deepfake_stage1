@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { CloudArrowUp, VideoCamera, FileVideo } from "lucide-react";
+import { CloudUpload, Video, FileVideo } from "lucide-react";
 
 interface UploadSectionProps {
   onFileSelect: (file: File) => void;
@@ -65,7 +65,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
                 ${isDragActive ? 'bg-primary/10' : 'bg-primary/5'}
                 transition-colors
               `}>
-                <CloudArrowUp className={`w-12 h-12 ${isDragActive ? 'text-primary' : 'text-primary/60'}`} />
+                <CloudUpload className={`w-12 h-12 ${isDragActive ? 'text-primary' : 'text-primary/60'}`} />
               </div>
               
               <div>
@@ -77,7 +77,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
 
               <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <VideoCamera className="w-4 h-4" />
+                  <Video className="w-4 h-4" />
                   <span>MP4, AVI, MOV</span>
                 </div>
                 <div className="flex items-center gap-2">

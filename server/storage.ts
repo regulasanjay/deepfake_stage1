@@ -40,8 +40,22 @@ export class MemStorage implements IStorage {
   async createVideoAnalysis(insertAnalysis: InsertVideoAnalysis): Promise<VideoAnalysis> {
     const id = randomUUID();
     const analysis: VideoAnalysis = {
-      ...insertAnalysis,
       id,
+      fileName: insertAnalysis.fileName,
+      fileSize: insertAnalysis.fileSize,
+      fileType: insertAnalysis.fileType,
+      duration: insertAnalysis.duration ?? null,
+      resolution: insertAnalysis.resolution ?? null,
+      frameRate: insertAnalysis.frameRate ?? null,
+      isAuthentic: insertAnalysis.isAuthentic,
+      confidenceScore: insertAnalysis.confidenceScore,
+      spatialScore: insertAnalysis.spatialScore,
+      temporalScore: insertAnalysis.temporalScore,
+      faceManipulationScore: insertAnalysis.faceManipulationScore,
+      audioVisualSyncScore: insertAnalysis.audioVisualSyncScore,
+      compressionArtifactsScore: insertAnalysis.compressionArtifactsScore,
+      frameConfidenceData: insertAnalysis.frameConfidenceData as number[],
+      analysisStages: insertAnalysis.analysisStages as string[],
       createdAt: new Date(),
     };
     this.videoAnalyses.set(id, analysis);

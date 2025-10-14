@@ -18,8 +18,8 @@ export const videoAnalyses = pgTable("video_analyses", {
   faceManipulationScore: integer("face_manipulation_score").notNull(),
   audioVisualSyncScore: integer("audio_visual_sync_score").notNull(),
   compressionArtifactsScore: integer("compression_artifacts_score").notNull(),
-  frameConfidenceData: jsonb("frame_confidence_data").$type<number[]>().notNull(),
-  analysisStages: jsonb("analysis_stages").$type<string[]>().notNull(),
+  frameConfidenceData: jsonb("frame_confidence_data").notNull().$type<number[]>(),
+  analysisStages: jsonb("analysis_stages").notNull().$type<string[]>(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
