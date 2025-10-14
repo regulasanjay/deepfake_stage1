@@ -21,8 +21,19 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      // Avoid logging full response bodies to prevent leaking PII and large payloads
+      // Log only small metadata
+      if (capturedJsonResponse && typeof capturedJsonResponse === 'object') {
+        const summaryKeys = ['id', 'error', 'message'];
+        const summary: Record<string, unknown> = {};
+        for (const k of summaryKeys) {
+          if (k in capturedJsonResponse) {
+            summary[k] = (capturedJsonResponse as any)[k];
+          }
+        }
+        if (Object.keys(summary).length > 0) {
+          logLine += ` :: ${JSON.stringify(summary)}`;
+        }
       }
 
       if (logLine.length > 80) {
@@ -43,8 +54,8 @@ app.use((req, res, next) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    res.status(status).json({ error: message });
+    // Do not throw after responding; let Express handle lifecycle
   });
 
   // importantly only setup vite in development and after

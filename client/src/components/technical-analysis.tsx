@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Activity, Eye, Volume2, AlertCircle } from "lucide-react";
@@ -22,6 +22,9 @@ export function TechnicalAnalysis({ analysis }: TechnicalAnalysisProps) {
     if (score >= 60) return 'bg-[hsl(32,95%,44%)]';
     return 'bg-destructive';
   };
+
+  // Memoize heavy derived arrays to avoid recalculation and re-render cost
+  const memoizedFrameData = useMemo(() => analysis.frameConfidenceData, [analysis.frameConfidenceData]);
 
   return (
     <section className="py-16">
@@ -50,7 +53,7 @@ export function TechnicalAnalysis({ analysis }: TechnicalAnalysisProps) {
               </CardHeader>
               <CardContent>
                 <div className="h-64 flex items-end gap-1">
-                  {analysis.frameConfidenceData.map((confidence, index) => (
+                  {memoizedFrameData.map((confidence, index) => (
                     <div
                       key={index}
                       className="flex-1 bg-primary/20 hover:bg-primary/40 transition-all duration-200 rounded-t relative group cursor-pointer hover:scale-105"

@@ -7,6 +7,7 @@ interface ResultsDashboardProps {
 }
 
 export function ResultsDashboard({ analysis }: ResultsDashboardProps) {
+  // Avoid recomputing values during re-renders
   const isAuthentic = analysis.isAuthentic;
   const confidence = analysis.confidenceScore;
 
@@ -44,7 +45,7 @@ export function ResultsDashboard({ analysis }: ResultsDashboardProps) {
                   }
                 </p>
 
-                <div className="relative inline-block group">
+                <div className="relative inline-block group" aria-label="Confidence gauge">
                   <svg className="w-48 h-48 drop-shadow-lg" viewBox="0 0 200 200">
                     <circle
                       cx="100"
