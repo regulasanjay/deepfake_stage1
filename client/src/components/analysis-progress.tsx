@@ -55,17 +55,21 @@ export function AnalysisProgress({ fileName }: AnalysisProgressProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium">{stages[currentStage].message}</span>
-                <span className="font-mono text-primary">{Math.min(progress, 100)}%</span>
+                <span className="font-mono text-primary font-bold">{Math.min(progress, 100)}%</span>
               </div>
-              <div className="h-3 bg-background rounded-full overflow-hidden">
+              <div className="h-3 bg-background rounded-full overflow-hidden shadow-inner">
                 <div
-                  className="h-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-300 ease-out relative"
+                  className="h-full bg-gradient-to-r from-primary via-primary to-primary/80 transition-all duration-300 ease-out relative"
                   style={{ width: `${Math.min(progress, 100)}%` }}
                   data-testid="progress-bar"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-pulse" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" />
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Stage {currentStage + 1} of {stages.length}
+              </p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">

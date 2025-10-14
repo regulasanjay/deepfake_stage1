@@ -23,7 +23,24 @@ export default function Home() {
   };
 
   const handleStartAnalysis = async () => {
-    if (!uploadedFile) return;
+    if (!uploadedFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select a video file to analyze.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate file size
+    if (uploadedFile.size > 500 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Maximum file size is 500MB. Please select a smaller file.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsAnalyzing(true);
     
@@ -37,19 +54,21 @@ export default function Home() {
       });
       
       if (!response.ok) {
-        throw new Error('Analysis failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Analysis failed');
       }
       
       const data = await response.json();
       setAnalysisId(data.id);
       
+      // Simulate analysis progress with realistic timing
       setTimeout(() => {
         setAnalysisResult(data);
         setIsAnalyzing(false);
         setAnalysisComplete(true);
         
         toast({
-          title: data.isAuthentic ? "Video Authentic" : "Deepfake Detected",
+          title: data.isAuthentic ? "✓ Video Authentic" : "⚠ Deepfake Detected",
           description: data.isAuthentic 
             ? "No signs of manipulation detected in this video."
             : "This video shows signs of AI manipulation.",
@@ -61,7 +80,7 @@ export default function Home() {
       setIsAnalyzing(false);
       toast({
         title: "Analysis Failed",
-        description: "An error occurred while analyzing the video. Please try again.",
+        description: error instanceof Error ? error.message : "An error occurred while analyzing the video. Please try again.",
         variant: "destructive",
       });
     }

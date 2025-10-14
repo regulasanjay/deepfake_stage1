@@ -53,12 +53,13 @@ export function TechnicalAnalysis({ analysis }: TechnicalAnalysisProps) {
                   {analysis.frameConfidenceData.map((confidence, index) => (
                     <div
                       key={index}
-                      className="flex-1 bg-primary/20 hover:bg-primary/40 transition-colors rounded-t relative group"
+                      className="flex-1 bg-primary/20 hover:bg-primary/40 transition-all duration-200 rounded-t relative group cursor-pointer hover:scale-105"
                       style={{ height: `${confidence}%` }}
                       data-testid={`frame-bar-${index}`}
                     >
-                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-popover border px-2 py-1 rounded text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        Frame {index + 1}: {confidence}%
+                      <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-popover border px-3 py-1.5 rounded-md text-xs font-mono opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg z-10">
+                        <div className="font-semibold">Frame {index + 1}</div>
+                        <div className="text-primary">{confidence}% confidence</div>
                       </div>
                     </div>
                   ))}

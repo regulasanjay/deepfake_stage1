@@ -26,6 +26,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "No video file uploaded" });
       }
 
+      // Validate file size
+      if (req.file.size > 500 * 1024 * 1024) {
+        return res.status(400).json({ error: "File size exceeds 500MB limit" });
+      }
+
+      // Validate file type
+      const allowedTypes = ['video/mp4', 'video/avi', 'video/quicktime'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        return res.status(400).json({ error: "Invalid file type. Only MP4, AVI, and MOV files are allowed" });
+      }
+
       const videoMetadata = {
         fileName: req.file.originalname,
         fileSize: req.file.size,
@@ -39,7 +50,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(analysis);
     } catch (error) {
       console.error("Analysis error:", error);
-      res.status(500).json({ error: "Analysis failed" });
+      
+      if (error instanceof Error) {
+        res.status(500).json({ error: error.message });
+      } else {
+        res.status(500).json({ error: "Analysis failed. Please try again." });
+      }
     }
   });
 

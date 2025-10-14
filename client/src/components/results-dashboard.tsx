@@ -44,8 +44,8 @@ export function ResultsDashboard({ analysis }: ResultsDashboardProps) {
                   }
                 </p>
 
-                <div className="relative inline-block">
-                  <svg className="w-48 h-48" viewBox="0 0 200 200">
+                <div className="relative inline-block group">
+                  <svg className="w-48 h-48 drop-shadow-lg" viewBox="0 0 200 200">
                     <circle
                       cx="100"
                       cy="100"
@@ -53,6 +53,7 @@ export function ResultsDashboard({ analysis }: ResultsDashboardProps) {
                       fill="none"
                       stroke="hsl(var(--border))"
                       strokeWidth="12"
+                      opacity="0.3"
                     />
                     <circle
                       cx="100"
@@ -65,12 +66,13 @@ export function ResultsDashboard({ analysis }: ResultsDashboardProps) {
                       strokeDashoffset={`${2 * Math.PI * 80 * (1 - confidence / 100)}`}
                       strokeLinecap="round"
                       transform="rotate(-90 100 100)"
-                      className="transition-all duration-1000"
+                      className="transition-all duration-1000 ease-out"
+                      filter="drop-shadow(0 0 8px currentColor)"
                     />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <p className="text-5xl font-bold font-mono" data-testid="text-confidence">{confidence}%</p>
-                    <p className="text-sm text-muted-foreground">Confidence</p>
+                    <p className="text-5xl font-bold font-mono transition-transform group-hover:scale-110" data-testid="text-confidence">{confidence}%</p>
+                    <p className="text-sm text-muted-foreground font-medium">Confidence</p>
                   </div>
                 </div>
               </div>

@@ -9,7 +9,21 @@ interface UploadSectionProps {
 }
 
 export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: UploadSectionProps) {
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const onDrop = useCallback((acceptedFiles: File[], rejectedFiles: any[]) => {
+    if (rejectedFiles.length > 0) {
+      const error = rejectedFiles[0].errors[0];
+      let message = "Failed to upload file";
+      
+      if (error.code === 'file-too-large') {
+        message = "File is too large. Maximum size is 500MB.";
+      } else if (error.code === 'file-invalid-type') {
+        message = "Invalid file type. Please upload MP4, AVI, or MOV files only.";
+      }
+      
+      alert(message);
+      return;
+    }
+    
     if (acceptedFiles.length > 0) {
       onFileSelect(acceptedFiles[0]);
     }
