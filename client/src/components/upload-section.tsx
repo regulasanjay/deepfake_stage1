@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, Video, File } from "lucide-react";
+import { Upload, Video, File, CloudUpload, VideoIcon } from "lucide-react";
 
 interface UploadSectionProps {
   onFileSelect: (file: File | null) => void; // Allow null for removal
@@ -13,17 +13,17 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
     if (rejectedFiles.length > 0) {
       const error = rejectedFiles[0].errors[0];
       let message = "Failed to upload file";
-      
+
       if (error.code === 'file-too-large') {
         message = "File is too large. Maximum size is 500MB.";
       } else if (error.code === 'file-invalid-type') {
         message = "Invalid file type. Please upload MP4, AVI, or MOV files only.";
       }
-      
+
       alert(message);
       return;
     }
-    
+
     if (acceptedFiles.length > 0) {
       onFileSelect(acceptedFiles[0]);
     }
@@ -91,7 +91,7 @@ export function UploadSection({ onFileSelect, selectedFile, onStartAnalysis }: U
 
               <div className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
-                  <Video className="w-4 h-4" />
+                  <VideoIcon className="w-4 h-4" />
                   <span>MP4, AVI, MOV</span>
                 </div>
                 <div className="flex items-center gap-2">
