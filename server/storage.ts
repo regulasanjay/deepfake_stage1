@@ -32,7 +32,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVideoAnalysis(insertAnalysis: InsertVideoAnalysis): Promise<VideoAnalysis> {
-    const analysisData = insertAnalysis;
+    const analysisData = {
+      ...insertAnalysis,
+      frameConfidenceData: insertAnalysis.frameConfidenceData as number[],
+      analysisStages: insertAnalysis.analysisStages as string[]
+    };
     const [analysis] = await db
       .insert(videoAnalyses)
       .values(analysisData)
