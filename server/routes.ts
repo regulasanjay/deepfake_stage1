@@ -48,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       dbError = err instanceof Error ? err.message : "Unknown database error";
     }
 
-    const statusOk = dbOk;
+    const statusOk = dbOk && rdConfigured; // require RD key configured
     res.status(statusOk ? 200 : 503).json({
       status: statusOk ? "ok" : "degraded",
       uptimeSec: Math.round(process.uptime()),
@@ -89,12 +89,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(analysis);
     } catch (error) {
       console.error("Analysis error:", error);
-      
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: "Analysis failed. Please try again." });
-      }
+      const message = error instanceof Error ? error.message : "Analysis failed. Please try again.";
+      const status = /Reality Defender API key/i.test(message) ? 400 : 500;
+      res.status(status).json({ error: message });
     } finally {
       // Cleanup uploaded temp file
       try {
