@@ -30,6 +30,8 @@ export const insertVideoAnalysisSchema = createInsertSchema(videoAnalyses).omit(
 
 export type InsertVideoAnalysis = z.infer<typeof insertVideoAnalysisSchema>;
 export type VideoAnalysis = typeof videoAnalyses.$inferSelect;
+// Table-level insert type that matches Drizzle column types exactly
+export type TableInsertVideoAnalysis = typeof videoAnalyses.$inferInsert;
 
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

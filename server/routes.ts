@@ -5,6 +5,8 @@ import os from "os";
 import path from "path";
 import fs from "fs/promises";
 import { storage } from "./storage";
+import { pool } from "./db";
+import axios from "axios";
 import { analyzeVideo } from "./deepfake-detector";
 
 // Use disk storage to avoid loading large uploads into memory
@@ -33,6 +35,38 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Lightweight health check for infra dependencies
+  app.get("/api/health", async (_req, res) => {
+    const hasDbUrl = Boolean(process.env.DATABASE_URL);
+    const hasRdKey = Boolean(process.env.REALITY_DEFENDER_API_KEY || process.env.RD_API_KEY);
+
+    let dbOk = false;
+    let dbError: string | undefined;
+    if (hasDbUrl) {
+      try {
+        await pool.query("select 1");
+        dbOk = true;
+      } catch (err) {
+        dbError = err instanceof Error ? err.message : "Database connection failed";
+      }
+    }
+
+    // Do not call Reality Defender network by default; just report configuration status.
+    // This avoids blocking health on external dependency and leaking secrets in egress logs.
+    const health = {
+      status: "ok",
+      db: {
+        configured: hasDbUrl,
+        ok: dbOk,
+        error: dbError,
+      },
+      realityDefender: {
+        configured: hasRdKey,
+      },
+    } as const;
+
+    res.json(health);
+  });
   app.post("/api/analyze", upload.single('video'), async (req, res) => {
     try {
       if (!req.file) {

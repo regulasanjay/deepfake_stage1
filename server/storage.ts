@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type VideoAnalysis, type InsertVideoAnalysis, users, videoAnalyses } from "@shared/schema";
+import { type User, type InsertUser, type VideoAnalysis, type InsertVideoAnalysis, type TableInsertVideoAnalysis, users, videoAnalyses } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -32,7 +32,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVideoAnalysis(insertAnalysis: InsertVideoAnalysis): Promise<VideoAnalysis> {
-    const analysisData = insertAnalysis;
+    const analysisData: TableInsertVideoAnalysis = insertAnalysis as unknown as TableInsertVideoAnalysis;
     const [analysis] = await db
       .insert(videoAnalyses)
       .values(analysisData)
