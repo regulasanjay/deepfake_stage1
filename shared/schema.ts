@@ -28,7 +28,9 @@ export const insertVideoAnalysisSchema = createInsertSchema(videoAnalyses).omit(
   createdAt: true,
 });
 
-export type InsertVideoAnalysis = z.infer<typeof insertVideoAnalysisSchema>;
+// Use Drizzle's inferred types for runtime inserts/selects to ensure
+// JSON array fields (e.g. frameConfidenceData) are correctly typed.
+export type InsertVideoAnalysis = typeof videoAnalyses.$inferInsert;
 export type VideoAnalysis = typeof videoAnalyses.$inferSelect;
 
 export const users = pgTable("users", {

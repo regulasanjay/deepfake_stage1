@@ -16,10 +16,14 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] = useState<VideoAnalysis | null>(null);
   const { toast } = useToast();
 
-  const handleFileSelect = (file: File) => {
-    setUploadedFile(file);
-    setAnalysisComplete(false);
-    setAnalysisResult(null);
+  const handleFileSelect = (file: File | null) => {
+    if (file) {
+      setUploadedFile(file);
+      setAnalysisComplete(false);
+      setAnalysisResult(null);
+    } else {
+      setUploadedFile(null);
+    }
   };
 
   const handleStartAnalysis = async () => {

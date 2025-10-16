@@ -5,6 +5,7 @@ import os from "os";
 import path from "path";
 import fs from "fs/promises";
 import { storage } from "./storage";
+import { pool } from "./db";
 import { analyzeVideo } from "./deepfake-detector";
 
 // Use disk storage to avoid loading large uploads into memory
@@ -33,6 +34,30 @@ const upload = multer({
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Lightweight health check for uptime, DB connectivity, and RD configuration
+  app.get("/health", async (_req, res) => {
+    const rdConfigured = Boolean(process.env.REALITY_DEFENDER_API_KEY || process.env.RD_API_KEY);
+    let dbOk = false;
+    let dbError: string | undefined;
+
+    try {
+      await pool.query("select 1");
+      dbOk = true;
+    } catch (err) {
+      dbOk = false;
+      dbError = err instanceof Error ? err.message : "Unknown database error";
+    }
+
+    const statusOk = dbOk && rdConfigured; // require RD key configured
+    res.status(statusOk ? 200 : 503).json({
+      status: statusOk ? "ok" : "degraded",
+      uptimeSec: Math.round(process.uptime()),
+      environment: app.get("env"),
+      rd: { configured: rdConfigured },
+      db: { ok: dbOk, error: dbError },
+    });
+  });
+
   app.post("/api/analyze", upload.single('video'), async (req, res) => {
     try {
       if (!req.file) {
@@ -64,12 +89,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(analysis);
     } catch (error) {
       console.error("Analysis error:", error);
-      
-      if (error instanceof Error) {
-        res.status(500).json({ error: error.message });
-      } else {
-        res.status(500).json({ error: "Analysis failed. Please try again." });
-      }
+      const message = error instanceof Error ? error.message : "Analysis failed. Please try again.";
+      const status = /Reality Defender API key/i.test(message) ? 400 : 500;
+      res.status(status).json({ error: message });
     } finally {
       // Cleanup uploaded temp file
       try {

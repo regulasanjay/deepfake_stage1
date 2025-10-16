@@ -14,11 +14,13 @@ export interface VideoMetadata {
   filePath?: string;
 }
 
-// Use Reality Defender via REST API when API key is available
+// Require Reality Defender API key
 const RD_API_KEY = process.env.REALITY_DEFENDER_API_KEY || process.env.RD_API_KEY || "";
 
 async function detectWithRealityDefender(filePath: string): Promise<any | null> {
-  if (!RD_API_KEY) return null;
+  if (!RD_API_KEY) {
+    throw new Error("Reality Defender API key is not configured. Set REALITY_DEFENDER_API_KEY or RD_API_KEY.");
+  }
   const tryEndpoints = [
     "https://api.realitydefender.com/v2/detect",
     "https://api.realitydefender.com/detect",
@@ -46,7 +48,7 @@ async function detectWithRealityDefender(filePath: string): Promise<any | null> 
       continue;
     }
   }
-  return null;
+  throw new Error("Reality Defender detection failed across all endpoints");
 }
 
 export async function analyzeVideo(metadata: VideoMetadata): Promise<InsertVideoAnalysis> {
@@ -68,43 +70,41 @@ export async function analyzeVideo(metadata: VideoMetadata): Promise<InsertVideo
       throw new Error("No file provided for analysis");
     }
 
-    // Step 2: Prefer Reality Defender if API key is configured
+    // Step 2: Scan via Reality Defender (required)
+    if (!RD_API_KEY) {
+      throw new Error("Reality Defender API key is required");
+    }
+
     let isDeepfake = false;
-    let confidence = 85; // conservative default if RD returns no score
+    let confidence = 85; // default if RD returns no score
     let rdDuration: number | undefined;
     let rdResolution: string | undefined;
     let rdFrameRate: number | undefined;
 
-    if (RD_API_KEY) {
-      const rdRaw = await detectWithRealityDefender(filePathToScan);
-      if (rdRaw) {
-        try {
-          const outcome = rdRaw?.result || rdRaw?.data || rdRaw;
-          const verdict = outcome?.is_deepfake ?? outcome?.verdict ?? outcome?.label;
-          const score = outcome?.confidence ?? outcome?.score ?? outcome?.probability;
+    const rdRaw = await detectWithRealityDefender(filePathToScan);
+    if (rdRaw) {
+      try {
+        const outcome = rdRaw?.result || rdRaw?.data || rdRaw;
+        const verdict = outcome?.is_deepfake ?? outcome?.verdict ?? outcome?.label;
+        const score = outcome?.confidence ?? outcome?.score ?? outcome?.probability;
 
-          if (typeof verdict === "boolean") {
-            isDeepfake = verdict;
-          } else if (typeof verdict === "string") {
-            isDeepfake = /fake|deepfake|manipulated/i.test(verdict);
-          }
-
-          if (typeof score === "number") {
-            confidence = Math.round(score * (score <= 1 ? 100 : 1));
-          }
-
-          rdDuration = outcome?.video_metadata?.duration ?? outcome?.duration;
-          rdResolution = outcome?.video_metadata?.resolution ?? outcome?.resolution;
-          rdFrameRate = outcome?.video_metadata?.frame_rate ?? outcome?.frameRate;
-        } catch (err) {
-          console.error("Reality Defender response parse error:", err);
+        if (typeof verdict === "boolean") {
+          isDeepfake = verdict;
+        } else if (typeof verdict === "string") {
+          isDeepfake = /fake|deepfake|manipulated/i.test(verdict);
         }
-      }
-    }
 
-    // If RD is not configured or failed, fall back to mock (no Deepware calls with hardcoded keys)
-    if (!RD_API_KEY) {
-      console.warn("REALITY_DEFENDER_API_KEY missing - using mock analysis");
+        if (typeof score === "number") {
+          confidence = Math.round(score * (score <= 1 ? 100 : 1));
+        }
+
+        rdDuration = outcome?.video_metadata?.duration ?? outcome?.duration;
+        rdResolution = outcome?.video_metadata?.resolution ?? outcome?.resolution;
+        rdFrameRate = outcome?.video_metadata?.frame_rate ?? outcome?.frameRate;
+      } catch (err) {
+        console.error("Reality Defender response parse error:", err);
+        throw new Error("Reality Defender response parse error");
+      }
     }
 
     // Generate synthetic sub-scores based on main confidence
@@ -144,10 +144,7 @@ export async function analyzeVideo(metadata: VideoMetadata): Promise<InsertVideo
 
   } catch (error) {
     console.error("Analysis error:", error);
-    
-    // Fallback to mock analysis if API fails
-    console.log("Falling back to mock analysis");
-    return getMockAnalysis(metadata);
+    throw error instanceof Error ? error : new Error("Analysis failed");
   } finally {
     // Clean up temp file if we created one
     if (tmpFilePath) {
@@ -171,36 +168,4 @@ function generateFrameConfidence(baseConfidence: number, isDeepfake: boolean): n
   }
   
   return frameConfidenceData;
-}
-
-function getMockAnalysis(metadata: VideoMetadata): InsertVideoAnalysis {
-  const isDeepfake = Math.random() > 0.6;
-  const baseConfidence = isDeepfake 
-    ? 75 + Math.floor(Math.random() * 20)
-    : 85 + Math.floor(Math.random() * 15);
-
-  return {
-    fileName: metadata.fileName,
-    fileSize: metadata.fileSize,
-    fileType: metadata.fileType,
-    duration: 45,
-    resolution: "1920x1080",
-    frameRate: 30,
-    isAuthentic: !isDeepfake,
-    confidenceScore: baseConfidence,
-    spatialScore: Math.max(40, Math.min(100, baseConfidence + Math.floor(Math.random() * 10) - 5)),
-    temporalScore: Math.max(40, Math.min(100, baseConfidence + Math.floor(Math.random() * 10) - 5)),
-    faceManipulationScore: isDeepfake ? 70 : 90,
-    audioVisualSyncScore: isDeepfake ? 72 : 92,
-    compressionArtifactsScore: isDeepfake ? 68 : 88,
-    frameConfidenceData: generateFrameConfidence(baseConfidence, isDeepfake),
-    analysisStages: [
-      "Video upload secured",
-      "Frame extraction completed",
-      "Spatial analysis performed",
-      "Temporal consistency checked",
-      "Long-distance attention applied",
-      "CNN backbone processing completed"
-    ],
-  };
 }
